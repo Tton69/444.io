@@ -4,71 +4,92 @@
 <meta charset="UTF-8">
 <title>444</title>
 
-<!-- ==================== СТИЛИ ==================== -->
 <style>
     /* ---------- Общие стили ---------- */
     html, body {
         margin: 0;
         padding: 0;
+        width: 100%;
         height: 100%;
         overflow: hidden;
         font-family: system-ui, -apple-system, BlinkMacSystemFont,
                      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        /* Холодный меняющийся градиент фона */
+        /* Очень холодный градиент, медленно меняющийся */
         background: linear-gradient(135deg,
-                    #0d1b2a,   /* очень тёмно‑синий */
-                    #1b263b,   /* темно‑голубой */
-                    #415a77,   /* стальной синий */
-                    #778da9,   /* серо‑голубой */
-                    #e0fbfc);  /* почти прозрачный голубой */
+            #0a0f2b,
+            #0d1e36,
+            #172a44,
+            #2b4f71,
+            #60c5ff);
         background-size: 400% 400%;
-        animation: bgShift 30s ease infinite;
+        animation: bgShift 45s ease infinite;
         display: flex;
         justify-content: center;
         align-items: center;
     }
 
-    /* Анимация плавного перемещения градиента */
     @keyframes bgShift {
         0%   { background-position: 0% 50%; }
         50%  { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
     }
 
-    /* ---------- Текст ---------- */
+    /* ---------- Центрированный заголовок ---------- */
     .title {
-        font-size: clamp(4rem, 20vw, 12rem);   /* крупный, адаптивный размер */
+        font-size: clamp(4rem, 20vw, 12rem);
         font-weight: 800;
-        text-align: center;
-        position: relative;
         line-height: 1;
+        position: relative;   /* нужен для z‑index */
+        z-index: 2;           /* выше фоновых слоёв */
     }
-
     .title span {
-        /* Синий‑голубой градиент внутри текста */
         background: linear-gradient(60deg,
-                     #e0fbfc,   /* почти белый голубой */
-                     #a5d8ff,   /* светло‑голубой */
-                     #69c0ff);  /* ярко‑голубой */
+                        #e0ffff,   /* лёгкий бирюзовый */
+                        #66dfff,
+                        #00bfff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        animation: glow 2.8s ease-in-out infinite alternate;
+        animation: glow 3s ease-in-out infinite alternate;
     }
-
     @keyframes glow {
         from { filter: brightness(1); }
         to   { filter: brightness(1.6); }
+    }
+
+    /* ---------- Туман из повторяющегося текста ----------
+       Позиция – за кадром, анимация – медленное вертикальное смещение */
+    .bg-text {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: -1;               /* самый «фоновый» слой */
+        animation: drift 120s linear infinite;
+    }
+    @keyframes drift {
+        0%   { transform: translateY(0); }
+        100% { transform: translateY(-50%); }  /* смещение на половину высоты */
+    }
+    .bg-line {
+        font-size: 1.4rem;
+        line-height: 1.6;
+        color: rgba(0, 200, 255, 0.07);   /* почти прозрачный холодный голубой */
+        white-space: nowrap;
+        overflow: hidden;
+        margin: 0;
     }
 
     /* ---------- Плавающие кружки ---------- */
     .circle {
         position: absolute;
         border-radius: 50%;
-        background: rgba(255,255,255,.08);   /* по умолчанию — почти прозрачный белый */
+        background: rgba(255,255,255,.07);   /* лёгкая «молочно‑белая» дымка */
         pointer-events: none;
         animation: float 12s linear infinite;
+        z-index: 0;              /* под заголовком, но поверх туманного текста */
     }
-
     @keyframes float {
         0% {
             transform: translateY(100vh) scale(0);
@@ -85,41 +106,55 @@
 </head>
 
 <body>
+    <!-- Фоновый слой с повторяющимся текстом -->
+    <div class="bg-text"></div>
+
+    <!-- Центральный заголовок -->
     <div class="title"><span>444</span></div>
 
-    <!-- ============= СКРИПТ ДЛЯ КРУЖКОВ ============= -->
     <script>
-        /* Холодные оттенки для кружков */
+        /* ====================== ТУМАННЫЙ ТЕКСТ ====================== */
+        const bg = document.querySelector('.bg-text');
+        const phrase = ' night and fog 444   ';   // пробелы для разделения
+        const linesCount = 48;                  // сколько строк вертикально
+        for (let i = 0; i < linesCount; i++) {
+            const line = document.createElement('div');
+            line.className = 'bg-line';
+            // Достаточно повторить, чтобы строка превысила ширину экрана
+            line.textContent = phrase.repeat(30);
+            bg.appendChild(line);
+        }
+
+        /* ====================== ПЛАВАЮЩИЕ КРУЖКИ ====================== */
         const CIRCLE_COLORS = [
-            'rgba(173,216,230,.12)',   // lightblue
-            'rgba(0,191,255,.15)',     // deepskyblue
-            'rgba(176,224,230,.08)'    // powderblue
+            'rgba(0,191,255,.12)',   // deep‑sky‑blue
+            'rgba(173,216,230,.10)', // light‑blue
+            'rgba(255,255,255,.07)'  // почти прозрачный белый
         ];
-        const NUM_CIRCLES = 30;   // количество кружков
-
+        const NUM_CIRCLES = 30;
         for (let i = 0; i < NUM_CIRCLES; i++) {
-            const el = document.createElement('div');
-            el.classList.add('circle');
+            const c = document.createElement('div');
+            c.classList.add('circle');
 
-            // случайный размер 30‑120 px
-            const size = Math.random() * 90 + 30;
-            el.style.width = el.style.height = `${size}px`;
+            // случайный размер 30‑110 px
+            const size = Math.random() * 80 + 30;
+            c.style.width = c.style.height = `${size}px`;
 
             // случайное горизонтальное положение
-            el.style.left = Math.random() * 100 + 'vw';
+            c.style.left = Math.random() * 100 + 'vw';
 
             // случайный цвет из палитры
-            el.style.background = CIRCLE_COLORS[
+            c.style.background = CIRCLE_COLORS[
                 Math.floor(Math.random() * CIRCLE_COLORS.length)
             ];
 
-            // разброс задержек и длительностей, чтобы движение выглядело естественно
-            const delay = Math.random() * -12;           // отрицательная задержка “запускает” анимацию в середине цикла
-            const duration = 10 + Math.random() * 8;    // 10‑18 сек.
-            el.style.animationDelay = `${delay}s`;
-            el.style.animationDuration = `${duration}s`;
+            // разброс задержек и длительностей – естественное движение
+            const delay = Math.random() * -12;          // отрицательная задержка «запускает» анимацию не с нуля
+            const duration = 10 + Math.random() * 8;     // 10‑18 сек.
+            c.style.animationDelay = `${delay}s`;
+            c.style.animationDuration = `${duration}s`;
 
-            document.body.appendChild(el);
+            document.body.appendChild(c);
         }
     </script>
 </body>
